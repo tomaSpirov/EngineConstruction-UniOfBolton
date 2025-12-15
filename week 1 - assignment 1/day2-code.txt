@@ -1,0 +1,434 @@
+#include <iostream>
+#include <memory>
+#include <fstream>
+#include <vector>
+
+// comment
+// NOTE: SFML is our platform layer: window, input, textures, shapes, fonts.
+// This is our "OS abstraction" for now.
+#include <SFML/Graphics.hpp>
+
+// ImGui gives us an editor/debug UI layer on top of the game.
+// Here we use the SFML backend instead of OpenGL.
+#include "imgui.h"
+#include "imgui-SFML.h"
+
+
+
+class BaseShape {
+private: 
+	std::string _Name;
+	float _X, _Y;//position
+	float _SX, _SY;//velosity
+	uint8_t _R, _G, _B;//color RGB
+public:
+	BaseShape(std::string shapeName,float xPos, float yPos,float speedX, float speedY, uint8_t colorR, uint8_t colorG, uint8_t colorB)
+		:_Name(shapeName), _X(xPos), _Y(yPos), _SX(speedX), _SY(speedY), _R(colorR), _G(colorG), _B(colorB)
+	{}
+
+
+};
+
+class CircShape :BaseShape 
+{
+private: 
+	float _Radius;//radius
+
+public: 
+	CircShape(std::string shapeName, float xPos, float yPos, float speedX, float speedY, uint8_t colorR, uint8_t colorG, uint8_t colorB,float radius) :BaseShape(shapeName,xPos,yPos, speedX, speedY, colorR,colorG,colorB),_Radius(radius)
+	{
+		
+	}
+};
+
+class RectShape : BaseShape 
+{
+private:
+	float _W, _H;//width, height
+
+public:
+	RectShape(std::string shapeName, float xPos, float yPos, float speedX, float speedY, uint8_t colorR, uint8_t colorG, uint8_t colorB, float width, float height) :BaseShape(shapeName, xPos, yPos, speedX, speedY, colorR, colorG, colorB), _W(width),_H(height) {}
+};
+
+
+
+int main(int argc, char *argv[])
+{
+	uint32_t  wW, wH;
+	sf::Font myFont;
+
+	//store all shapes create by txt comands
+	std::vector<sf::CircleShape> circleShapes;
+	std::vector<sf::RectangleShape> rectangleShapes;
+	
+
+	//loading data from file
+	std::ifstream istr;
+	istr.open("config.txt");
+
+	//checks while opening the file if not being opened
+	if (!istr.is_open()) 
+	{
+		std::cerr << "Couldn't open the file! ERRROOOORRRR!!!!";
+	}
+
+	
+	//loop and fethch the data from file
+	std::string type;
+	while (istr >> type)
+	{
+		//Window W H - DONE
+		if (type == "Window")
+		{
+			
+			istr >> wW >> wH;
+			//std::cout << " Window -> w:" << w << ", h:" << h << std::endl;
+
+		}
+		//Font F S R G B - DONE
+		if (type == "Font")
+		{
+			std::string fontFilePath;//string no spaces
+			int fontSize;
+			int R, G, B;//color RGB
+			istr >> fontFilePath >> fontSize >> R >> G >> B;
+
+
+			// let's load a font so we can display some text
+			
+			// attempt to load the font from a file
+			if (!myFont.openFromFile(fontFilePath))
+			{
+				// if we can't load the font, print an error to the error console and exit
+				//std::print("Could not load font!\n");
+				std::cout << "Could not load font!\n";
+				std::exit(-1);
+			}
+
+			// set up the text object that will be drawn to the screen
+			sf::Text text(myFont, "Sample Text", fontSize);
+			
+			text.setFillColor(sf::Color(R, G, B, 255));
+
+			std::cout << " Font -> path:" << fontFilePath << ", size:" << fontSize << ", r:" << R << ", g:" << G << ", b:" << B << std::endl;
+
+		}
+		//Rectangle N X Y SX SY R G B W H
+		if (type == "Rectangle")
+		{
+			std::string shapeName;
+			float X, Y;//position
+			float SX, SY;//velosity
+			uint8_t R, G, B;//color RGB
+			float W, H;//width, height
+			istr >> shapeName >> X >> Y >> SX >> SY >> R >> G >> B >> W >> H;
+
+
+			//do the Rectangle shape
+			sf::RectangleShape newRectangle;
+			newRectangle.setPosition({ X, Y });
+			newRectangle.setFillColor({ R, G, B });
+			newRectangle.setSize({W, H});
+			
+			//add to array
+			rectangleShapes.push_back(newRectangle);
+			
+			std::cout <<" Rectangle -> x:"<< X <<", y:" << Y << ", sx:" << SX << ", sy:" << SY <<", r:"<<R << ", g:" << G << ", b:" << B << ", width:" << W << ", height:" << H <<std::endl;
+
+		}
+		//Circle N X Y SX SY R G B R
+		if (type == "Circle")
+		{
+			std::string shapeName;
+			float X, Y;//position
+			float SX, SY;//velosity
+			uint8_t R, G, B;//color RGB
+			float Radius;//radius
+			istr >> shapeName >> X >> Y >> SX >> SY >> R >> G >> B >> Radius;
+
+			//store the Circle data in class data
+			CircShape(shapeName, X, Y, SX, SY, R, G, B, Radius);
+			//way to do CircleShape
+			sf::CircleShape newCircle;
+			newCircle.setPosition({ X, Y });
+			newCircle.setFillColor({ R, G, B });
+			newCircle.setRadius(Radius);
+
+			//add to array
+			circleShapes.push_back(newCircle);
+
+
+			std::cout <<" Circle -> x:"<< X <<", y:" << Y << ", sx:" << SX << ", sy:" << SY <<", r:"<<R << ", g:" << G << ", b:" << B << ", radius:" << Radius<<std::endl;
+		}
+
+		
+
+	}
+
+	istr.close();
+
+	//end the file open 
+
+
+	// create a new window of size w * h pixels
+	// top-left of the window is (0,0) and bottom-right is (w, h)
+	// you will have to read these from the config file (later in engine construction)
+	const uint32_t wWidth = static_cast<const uint32_t>(wW);//get width from txt file
+	const uint32_t wHeight =  static_cast<const uint32_t>(wH);//get width from txt file
+
+	//sf::RenderWindow window(sf::VideoMode({wW, wH}), "SFML works!");
+	sf::RenderWindow window(sf::VideoMode({wWidth, wHeight}), "SFML works!");
+	window.setFramerateLimit(60); // limit frame rate to 60 fps
+
+	// initialize imgui and create a clock used for its internal timing
+	if(!ImGui::SFML::Init(window))
+	{
+		//std::print("Could not initialize window\n");
+		std::cout << "Could not initialize window\n";
+		std::exit(-1);
+	}
+
+	// -------------------------------------------------------------
+	// Engine state: these variables represent editable "game state."
+	// In Week 1 of engine construction, teaching state management
+	// is more important than any features. Everything you do is
+	// Input → State Update → Rendering.
+	// -------------------------------------------------------------
+
+	// SFML clock for delta time
+	sf::Clock deltaClock;
+
+	// scale the imgui ui and text size by 2
+	ImGui::GetStyle().ScaleAllSizes(1.0f);
+	ImGui::GetIO().FontGlobalScale = 1.0f;
+	
+	
+	// the imgui color {r, g, b} wheel requires floats from 0-1
+	// sfml will require instead of uint8_t from 0-255
+	// this is the only really annoying conversion between sfml and imgui
+	// ImGui color (float 0-1 values)
+	float c[3] = {0.0f, 1.0f, 1.0f};
+	
+	// let's make a shape that we will draw to the screen
+	float circleRadius   = 50.0f;
+	int circleSegments   = 32;  // number of polygon segments (approximates a circle)
+	float circleSpeedX   = 1.0f;
+	float circleSpeedY   = 1.0f;
+	bool drawText = true;   // whether or not to draw the text
+	bool drawCircle = true; // whether or not to draw the circle
+
+	
+	
+	// -------------------------------------------------------------
+	// create the sfml circle shape based on our parameters
+	// SFML uses a convex polygon to approximate a circle
+	// -------------------------------------------------------------
+	
+	
+	
+	
+
+
+
+	//another way to do shape
+	// create the sfml circle shape based on our parameters
+	sf::CircleShape circle(circleRadius, circleSegments);
+	circle.setPosition({100.0f, 250.0f});
+	
+	
+		// let's load a font so we can display some text
+	//sf::Font myFont;
+
+	// attempt to load the font from a file
+	if(!myFont.openFromFile("fonts/KillerTech.ttf"))
+	{
+		// if we can't load the font, print an error to the error console and exit
+		//std::print("Could not load font!\n");
+		std::cout << "Could not load font!\n";
+		std::exit(-1);
+	}
+
+	// set up the text object that will be drawn to the screen
+	sf::Text text(myFont, "Sample Text", 24);
+
+	// position the top-left corner of the text so that the text aligns on the bottom
+	// this demonstrates UI layout + coordinate systems
+	// text character size is in pixels, so move the text up from the bottom by its height
+	text.setPosition({10.0f, static_cast<float>(wHeight - (float)text.getCharacterSize())});
+
+	
+	// Input text buffer for ImGui
+	char displayString[255] = "Sample Text";
+
+	
+
+
+
+
+	// ==============================================================
+	// Main Engine Loop (Game Loop)
+	// ==============================================================
+	//
+	// Classic structure:
+	//     1. Poll input events
+	//     2. Update game state (movement, animation, logic)
+	//     3. Render world
+	//     4. Render UI
+	//
+	// This is the same structure used by every engine (Unity, Unreal,
+	// Godot), only with different architecture layers.
+	// ==============================================================
+
+	// main loop - continues for each frame while window is open
+	while(window.isOpen())
+	{
+		// event handling
+		while(auto event = window.pollEvent())
+		{
+			// pass the event to imgui to be parsed
+			ImGui::SFML::ProcessEvent(window, *event);
+
+			// this event triggers when the window is closed
+			if(event->is<sf::Event::Closed>())
+			{
+				window.close();
+			}
+
+			// this event is triggered when a key is pressed
+			if(const auto *keyPressed = event->getIf<sf::Event::KeyPressed>())
+			{
+				//std::print("Key pressed with code = {}\n", int(keyPressed->scancode));
+
+				std::cout << "Key pressed with code = " << int(keyPressed->scancode) << "\n";
+
+				// simple game logic: pressing X reverses horizontal direction
+				if(keyPressed->scancode == sf::Keyboard::Scancode::X)
+				{
+					circleSpeedX *= -1.0f;
+				}
+			}
+		}
+
+		// update imgui for this frame with the time that the last frame took
+		ImGui::SFML::Update(window, deltaClock.restart());
+
+		// ====================
+		// Draw the UI
+		// ====================
+		ImGui::Begin("Shape Properties");
+		
+		const char* items[] = { "shape1","shape2", "shape3", "shape4", "shape5" };
+		static int item_index = 0;
+
+		ImGui::Combo("Combo", &item_index, items, IM_ARRAYSIZE(items));
+		std::vector<const char*> items;
+		for(auto &item:)
+
+
+
+		ImGui::Checkbox("Draw circle", &drawCircle);
+		ImGui::SameLine();
+		ImGui::Checkbox("Draw Text", &drawText);
+
+		ImGui::SliderFloat("Radius", &circleRadius, 0.0f, 300.0f);
+		ImGui::SliderInt("Sides", &circleSegments, 3, 64);
+		ImGui::SliderFloat("SpeedX", &circleSpeedX, 1.0f, 5.0f);
+		ImGui::SliderFloat("SpeedY", &circleSpeedY, 1.0f, 5.0f);
+
+		ImGui::ColorEdit3("Color Circle", c);
+
+		ImGui::InputText("Text", displayString, 255);
+		if(ImGui::Button("Set Text"))
+		{
+			text.setString(displayString);
+		}
+
+		ImGui::SameLine();
+		if(ImGui::Button("Reset Circle"))
+		{
+			circle.setPosition({0,0});
+		}
+		ImGui::End();
+
+		// ==============================================================
+		// Apply UI-modified values to actual SFML drawable objects
+		// ==============================================================
+		
+		// set the circle properties, because they may have been updated with the ui
+		circle.setPointCount(circleSegments);
+		circle.setRadius(circleRadius);
+
+		// imgui uses 0-1 floats for colors, sfml uses 0-255 for colors
+		// we must convert from the ui floats to sfml Uint8
+		circle.setFillColor(sf::Color(
+			uint8_t(c[0] * 255),
+			uint8_t(c[1] * 255),
+			uint8_t(c[2] * 255)
+		));
+
+		// Basic animation - move the circle each frame if it's still in frame
+		sf::Vector2f pos = circle.getPosition();
+		
+		
+		if(pos.x <0  || pos.x+2* circleRadius > wWidth) circleSpeedX *=-1;//changing direction
+		if(pos.y <0  || pos.y+2* circleRadius > wHeight) circleSpeedY *=-1;//changing direction
+		
+		
+		pos.x += circleSpeedX;
+		pos.y += circleSpeedY;
+
+		//std::cout<<"X: "<<pos.x;
+
+		circle.setPosition(pos);
+
+
+		for (auto& currShape : circleShapes) 
+		{
+			sf::Vector2f posCircles = currShape.getPosition();
+
+
+
+			if (pos.x <0 || pos.x + 2 * circleRadius > wWidth) circleSpeedX *= -1;//changing direction
+			if (pos.y <0 || pos.y + 2 * circleRadius > wHeight) circleSpeedY *= -1;//changing direction
+
+
+			pos.x += circleSpeedX;
+			pos.y += circleSpeedY;
+
+			//std::cout << "X: " << pos.x;
+
+			currShape.setPosition(pos);
+		}
+		
+
+
+
+		// basic rendering function calls
+		window.clear(); // clear the window of anything previously drawn
+
+		if(drawCircle)    // draw the circle if the boolean is true
+		{
+			window.draw(circle);
+			for (auto& s : circleShapes)
+			{
+
+
+				window.draw(s);
+
+			}
+
+		}
+
+		if(drawText)      // draw the text if the boolean is true
+		{
+			window.draw(text);
+		}
+
+		ImGui::SFML::Render(window); // draw the ui last so its on top
+		window.display(); // call the window display function
+	}
+
+	ImGui::SFML::Shutdown();
+	
+	return 0;
+}

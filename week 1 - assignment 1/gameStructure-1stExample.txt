@@ -1,0 +1,74 @@
+
+
+	class IScene
+	{
+		public:
+		virtual void handleInput() = 0;
+		virtual void update() = 0;
+		virtual void render() = 0;
+	};
+
+	class GameLevelScene : public IScene
+	{
+	/// ,,,,
+	}
+
+	
+
+
+	GameLevelScene::Init()
+	{
+		// create the entities for that scene
+		Entity p;
+		p.add<CHealth>(100);
+	
+	}
+
+	GameLevelScene::run()
+	{
+		while(gameIsRunning)
+		{
+			handleInput();
+			update();
+			render();
+			
+		}
+	}
+
+	GameLevelScene::handleInput()
+	{
+		// event handling
+		
+
+	}
+
+	GameLevelScene::update()
+	{
+		sMovement();
+
+		if(playerHealth < 0)
+		{
+			switchScene(GAME_OVER_SCENE);
+		}
+	}
+
+	GameLevelScene::sMovement()
+	{
+			
+	}
+
+// main.cpp
+	int main(int argc, char *argv[]) {
+	   Engine game("config.txt");
+	   game.run();
+	   return 0;
+	}
+	
+	Engine(std::string &configFile) {
+		currentScene = new GameLevelScene(); // new MenuScene();
+	}
+
+	Engine::run()
+	{
+		currentScene->run();
+	}

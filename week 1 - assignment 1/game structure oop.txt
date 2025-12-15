@@ -1,0 +1,123 @@
+additional 
+http://gamedevgeek.com/tutorials/managing-game-states-in-c/
+
+// Online C++ compiler to run C++ program online
+#include <iostream>
+
+enum class STATES
+{
+    MENU,
+    GAME,
+    GAMEOVER
+    
+};
+
+class IState
+{
+    public:
+        virtual void handleInput() = 0;
+        virtual void update() = 0;
+        virtual void render() = 0;
+};
+
+class MenuState;
+class GameState;
+
+class Engine
+{
+    public:
+        IState *currentScene;
+        STATES curretStateType = STATES::MENU;
+        
+     Engine() {
+         currentScene = new MenuState(this);
+     }
+     
+     void changeScene(STATES sceneType)
+     {
+         switch(sceneType)
+         {
+             case STATES::MENU:
+                currentScene = new MenuState(this);
+                curretStateType = STATES::MENU;
+                break;
+            case STATES::GAME:
+                // code game
+                currentScene = new GameState(this);
+                curretStateType = STATES::GAME;
+                break;
+            default:
+                break;
+         }
+     }
+     
+     void run()
+     {
+         while(true)
+         {
+             currentScene->handleInput();
+             currentScene->update();
+         }
+     }
+};
+
+class MenuState : public IState
+{
+    public:
+        int counter = 100;
+        Engine *engineRef;
+    public:
+        
+        MenuState(Engine *eng)
+        {
+            engineRef = eng;
+        }
+        
+        void handleInput() override {
+           // std::cout << "Update menu input.\n";
+        }
+        void update() override {
+            std::cout << "Counter = " << counter << std::endl;
+            counter--; 
+            if(counter <= 0)
+            {
+                engineRef->changeScene(STATES::GAME);
+            }
+        }
+        void render() override {
+            
+        }
+};
+
+class GameState : public IState
+{
+    public:
+        int counter = 100;
+        Engine *engineRef;
+    public:
+        
+        GameState(Engine *eng)
+        {
+            engineRef = eng;
+        }
+        
+        void handleInput() override {
+            std::cout << "Game menu input.\n";
+        }
+        void update() override {
+           
+        }
+        void render() override {
+            
+        }
+};
+
+
+
+int main() {
+    Engine game;
+    
+    game.run();
+
+    return 0;
+}

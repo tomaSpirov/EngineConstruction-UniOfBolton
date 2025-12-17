@@ -1,13 +1,14 @@
 #include "Game.h"
 
 #include <iostream>
-
+#include <fstream>
 #include "Components.hpp"
 #include "Vec2.hpp"
 
 Game::Game(const std::string &configFile)
   : m_text(m_font, "Default", 24)
 {
+
   init(configFile);
 }
 
@@ -16,10 +17,34 @@ void Game::init(const std::string &path)
   // TODO: read in config file here
   //   use the pre-made PlayerConfig, EnemyConfig, BulletConfig variables
 
+    std::ifstream istr;
+    istr.open(path);
+
+    if (!istr.is_open()) 
+    {
+        std::cerr << "Could not open the file!";
+    }
+
+    std::string type;
+    while (istr >> type) 
+    {
+        if (type == "Window") 
+        {
+            istr >> winWidth >> winHeight >> frameLimit >> fullScreen;
+
+
+        }
+
+    }
+
+
   // set up default window paramters
-  m_window.create(sf::VideoMode({1280, 720}), "Assignment 2");
+  //m_window.create(sf::VideoMode({1280, 720}), "Assignment 2");
+  m_window.create(sf::VideoMode({winWidth, winHeight}), "Assignment 2");
   m_window.setKeyRepeatEnabled(false);
-  m_window.setFramerateLimit(60);
+  m_window.setFramerateLimit(frameLimit);
+  
+  
 
   if(!ImGui::SFML::Init(m_window)) {}
 
@@ -77,6 +102,8 @@ void Game::spawnPlayer()
   // This returns a shared_ptr<Entity> that we can use to add components
   // so we use 'auto' to save typing
   auto e = m_entities.addEntity("player");
+
+
 
   // Give this entity a Transform so it spawns at (200, 200), with velocity (1,1) and angle 0
   e->add<CTransform>(Vec2(200.0f, 200.0f), Vec2f(1.0f, 1.0f), 0.0f);

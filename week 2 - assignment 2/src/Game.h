@@ -31,6 +31,11 @@ struct BulletConfig
 
 class Game
 {
+	float winWidth, winHeight;
+	int frameLimit;
+	bool fullScreen;
+
+
   sf::RenderWindow m_window; // the window we will draw to
   EntityManager m_entities; // vector of entities to maintain
   sf::Font m_font; // the font we will use to draw

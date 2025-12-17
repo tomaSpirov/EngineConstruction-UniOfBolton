@@ -37,75 +37,97 @@ class Vec2
 
     Vec2 operator + (const Vec2& rhs) const 
     {
-      // TODO
-      return Vec2();
+      // TODO - implement add(+)
+       
+
+      return Vec2(rhs.x + x, rhs.y + y);
     }
 
     Vec2 operator - (const Vec2& rhs) const 
     {
       // TODO
-      return Vec2();
+      return Vec2(rhs.x - x, rhs.y - y);
     }
 
     Vec2 operator / (const T val) const 
     {
-      // TODO
-      return Vec2();
+      // TODO - NEED CHECK later
+      return Vec2(val.x/x, val.y / y);
     }
 
     Vec2 operator * (const T val) const 
     {
-      // TODO
-      return Vec2();
+      // TODO - NEED CHECK later
+      return Vec2(val.x / x, val.y / y);
     }
 
     bool operator == (const Vec2& rhs) const 
     {
-      // TODO
+      // TODO - DONE
+
+        if (x == rhs.x && y == rhs.y) return true;
+
       return false;
     }
 
     bool operator != (const Vec2& rhs) const 
     {
       // TODO
+       if (x != rhs.x && y != rhs.y) return true;
+
       return false;
     }
 
     void operator += (const Vec2& rhs)
     {
-      // TODO
+      // TODO - not sure
+        x += rhs.x;
+        y += rhs.y;
     }
 
     void operator -= (const Vec2& rhs)
     {
-      // TODO
+      // TODO -DONE
+        x -= rhs.x;
+        y -= rhs.y;
     }
 
     void operator *= (const T val)
     {
-      // TODO
+      // TODO - DONE
+        x *= val.x;
+        y *= val.y;
     }
 
     void operator /= (const T val)
     {
-      // TODO
+      // TODO - DONE
+        x /= val.x;
+        y /= val.y;
     }
 
     float distance(const Vec2& rhs) const 
     {
-      // TODO
-      return 0.0f;
+      // TODO - not sure
+
+         return sqrtf(pow(rhs.x - x) + pow(rhs.y - y));     
     }
 
     float length() const 
     {
-      // TODO
-      return 0.0f;
+      // TODO - not sure
+
+      return sqrtf(x * x + y * y);
     }
 
     void normalize()
     {
-      // TODO
+      // TODO - not sure
+
+        float L = this->length();
+        this. x = this.x / L;
+        this. y = this.y / L;
+
     }
 };
 

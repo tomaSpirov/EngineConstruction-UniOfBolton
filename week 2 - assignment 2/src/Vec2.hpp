@@ -124,9 +124,9 @@ class Vec2
     {
       // TODO - not sure
 
-        float L = this->length();
-        this. x = this.x / L;
-        this. y = this.y / L;
+        float L = length();
+        x = x / L;
+        y = y / L;
 
     }
 };

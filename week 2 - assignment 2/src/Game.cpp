@@ -30,19 +30,78 @@ void Game::init(const std::string &path)
     {
         if (type == "Window") 
         {
-            istr >> winWidth >> winHeight >> frameLimit >> fullScreen;
+            istr >> m_windowConfig.winWidth >> m_windowConfig.winHeight >> m_windowConfig.frameLimit >> m_windowConfig.fullScreen;
+
+
+        }
+        if (type == "Font")
+        {
+            istr >> m_fontConfig.urlPath >> m_fontConfig.fontSize>> m_fontConfig.colorR>> m_fontConfig.colorG>> m_fontConfig.colorB;
+
+
+        }
+        if (type == "Player")
+        {
+            istr >> m_playerConfig.SR
+                >> m_playerConfig.CR
+                >> m_playerConfig.S
+                >> m_playerConfig.FR
+                >> m_playerConfig.FG
+                >> m_playerConfig.FB
+                >> m_playerConfig.OR
+                >> m_playerConfig.OG
+                >> m_playerConfig.OB
+                >> m_playerConfig.OT
+                >> m_playerConfig.V;
+
+
+        }
+        if (type == "Enemy")
+        {
+            istr >> m_enemyConfig.SR
+                >> m_enemyConfig.CR
+                >> m_enemyConfig.SMIN
+                >> m_enemyConfig.SMAX
+                >> m_enemyConfig.OR
+                >> m_enemyConfig.OG
+                >> m_enemyConfig.OB
+                >> m_enemyConfig.OT
+                >> m_enemyConfig.VMIN
+                >> m_enemyConfig.VMAX
+                >> m_enemyConfig.L
+                >> m_enemyConfig.SI;
+                
+
+
+        }
+        if (type == "Bullet")
+        {
+            istr >> m_bulletConfig.SR
+                >> m_bulletConfig.CR
+                >> m_bulletConfig.S
+                >> m_bulletConfig.FR
+                >> m_bulletConfig.FG
+                >> m_bulletConfig.FB
+                >> m_bulletConfig.OR
+                >> m_bulletConfig.OG
+                >> m_bulletConfig.OB
+                >> m_bulletConfig.OT
+                >> m_bulletConfig.V
+                >> m_bulletConfig.L;
 
 
         }
 
     }
 
+    istr.close();
+
 
   // set up default window paramters
   //m_window.create(sf::VideoMode({1280, 720}), "Assignment 2");
-  m_window.create(sf::VideoMode({winWidth, winHeight}), "Assignment 2");
+  m_window.create(sf::VideoMode({ (uint32_t)m_windowConfig.winWidth, (uint32_t)m_windowConfig.winHeight }), "Assignment 2");
   m_window.setKeyRepeatEnabled(false);
-  m_window.setFramerateLimit(frameLimit);
+  m_window.setFramerateLimit(m_windowConfig.frameLimit);
   
   
 
@@ -104,12 +163,12 @@ void Game::spawnPlayer()
   auto e = m_entities.addEntity("player");
 
 
-
   // Give this entity a Transform so it spawns at (200, 200), with velocity (1,1) and angle 0
-  e->add<CTransform>(Vec2(200.0f, 200.0f), Vec2f(1.0f, 1.0f), 0.0f);
+  e->add<CTransform>(Vec2(m_windowConfig.winWidth / 2, m_windowConfig.winHeight / 2), Vec2f(0.f, 0.f), 0.0f);
 
   // The entity;s shape will have a radius 32, 8 sides, dark grey fill, and red outline of thickness 4
-  e->add<CShape>(32.0f, 8, sf::Color(10, 10, 10), sf::Color(255, 0, 0), 4.0f);
+  e->add<CShape>(m_playerConfig.SR, m_playerConfig.V, sf::Color(m_playerConfig.FR, m_playerConfig.FG, m_playerConfig.FB), sf::Color(m_playerConfig.OR, m_playerConfig.OG, m_playerConfig.OB), m_playerConfig.OT);
+
 
   // Add an input component to the player so that we can use inputs
   e->add<CInput>();
@@ -155,11 +214,43 @@ void Game::sMovement()
 {
   // TO-DO: implement all entity movement in this function
   //        you should read the m_player->cInput component to determine if the player is moving up or down or left or right
+  
+    auto& input = player()->get<CInput>();
+    auto& transform = player()->get<CTransform>();
+  
+
+    if (input.up && input.left)
+    {
+        std::cout << "X:" << transform.pos.x + m_playerConfig.S << std::endl;
+
+        Vec2f(transform.pos.x + m_playerConfig.S, transform.pos.y + m_playerConfig.S).normalize();
+    }
+
+    if (input.up) 
+    {
+        transform.pos.y -= transform.velocity.y + m_playerConfig.S;
+    }
+    if (input.left)
+    {
+        transform.pos.x -= transform.velocity.x + m_playerConfig.S;
+        std::cout << "X:" << transform.pos.x + m_playerConfig.S << std::endl;
+
+    }
+    if (input.down)
+    {
+        transform.pos.y += transform.velocity.y + m_playerConfig.S;
+    }
+    if (input.right)
+    {
+        transform.pos.x += transform.velocity.x + m_playerConfig.S;
+    }
+
+   
 
   // sample movement update for the player
-  auto &transform = player()->get<CTransform>();
-  transform.pos.x += transform.velocity.x;
-  transform.pos.y += transform.velocity.y;
+  
+ // transform.pos.x += transform.velocity.x;
+  //transform.pos.y += transform.velocity.y;
 }
   
 void Game::sLifespan()
@@ -245,6 +336,7 @@ void Game::sUserInput()
 
   while(auto event = m_window.pollEvent())
   {
+      auto& input = player()->get<CInput>();
     // pass the event to imgui to be parsed
     ImGui::SFML::ProcessEvent(m_window, *event);
 
@@ -264,7 +356,27 @@ void Game::sUserInput()
       {
         // TO-DO: set player's input component UP to true
         std::cout << "W key Pressed\n";
+        input.up = true;
       }
+      if (keyPressed->scancode == sf::Keyboard::Scancode::A)
+      {
+          // TO-DO: set player's input component UP to true
+          std::cout << "A key Pressed\n";
+          input.left = true;
+      }
+      if (keyPressed->scancode == sf::Keyboard::Scancode::S)
+      {
+          // TO-DO: set player's input component UP to true
+          std::cout << "S key Pressed\n";
+          input.down = true;
+      }
+      if (keyPressed->scancode == sf::Keyboard::Scancode::D)
+      {
+          // TO-DO: set player's input component UP to true
+          std::cout << "D key Pressed\n";
+          input.right = true;
+      }
+
     }
 
     // this event is triggered when a key is released
@@ -277,7 +389,29 @@ void Game::sUserInput()
       {
         // TO-DO: set player's input component UP to false
         std::cout << "W key Released\n";
+        input.up = false;
+
       }
+      if (keyReleased->scancode == sf::Keyboard::Scancode::A)
+      {
+          // TO-DO: set player's input component UP to false
+          std::cout << "A key Released\n";
+          input.left = false;
+
+      }
+      if (keyReleased->scancode == sf::Keyboard::Scancode::S)
+      {
+          // TO-DO: set player's input component UP to false
+          std::cout << "S key Released\n";
+          input.down = false;
+      }
+      if (keyReleased->scancode == sf::Keyboard::Scancode::D)
+      {
+          // TO-DO: set player's input component UP to false
+          std::cout << "D key Released\n";
+          input.right = false;
+      }
+
     }
 
     if(const auto *mousePressed  = event->getIf<sf::Event::MouseButtonPressed>())

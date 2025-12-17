@@ -9,8 +9,9 @@
 
 struct PlayerConfig 
 { 
-  int SR, CR, FR, FG, OR, OG, OB, OT, V; 
-  float S;
+  int SR, CR, FR, FG, FB, OR, OG, OB, OT, V;
+  //  32  32  5   5   5   255 0   0   4  8
+  float S;//5
 };
 
 struct EnemyConfig 
@@ -21,8 +22,22 @@ struct EnemyConfig
 
 struct BulletConfig 
 { 
-  int SR, CR, FR, FG, OR, OG, OB, OT, V, L; 
+  int SR, CR, FR, FG,FB, OR, OG, OB, OT, V, L; 
   float S;
+};
+
+struct WindowConfig 
+{
+	float winWidth, winHeight;
+	int frameLimit;
+	bool fullScreen;
+};
+
+struct FontConfig 
+{
+		std::string urlPath;
+		int fontSize;
+		int colorR, colorG, colorB;
 };
 
 #include <string>
@@ -31,9 +46,9 @@ struct BulletConfig
 
 class Game
 {
-	float winWidth, winHeight;
-	int frameLimit;
-	bool fullScreen;
+	
+
+
 
 
   sf::RenderWindow m_window; // the window we will draw to
@@ -43,6 +58,9 @@ class Game
   PlayerConfig m_playerConfig;
   EnemyConfig m_enemyConfig;
   BulletConfig m_bulletConfig;
+  WindowConfig m_windowConfig;
+  FontConfig m_fontConfig;
+
   sf::Clock m_deltaClock;
   int m_score = 0;
   int m_currentFrame = 0;

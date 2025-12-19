@@ -10,6 +10,7 @@ Game::Game(const std::string &configFile)
 {
 
   init(configFile);
+  init(configFile);
 }
 
 void Game::init(const std::string &path)
@@ -42,52 +43,52 @@ void Game::init(const std::string &path)
         }
         if (type == "Player")
         {
-            istr >> m_playerConfig.SR
-                >> m_playerConfig.CR
-                >> m_playerConfig.S
-                >> m_playerConfig.FR
-                >> m_playerConfig.FG
-                >> m_playerConfig.FB
-                >> m_playerConfig.OR
-                >> m_playerConfig.OG
-                >> m_playerConfig.OB
-                >> m_playerConfig.OT
-                >> m_playerConfig.V;
+			istr >> m_playerConfig.SR//Shape Radius (int)
+				>> m_playerConfig.CR//Collision Radius (int)
+				>> m_playerConfig.S//Speed (Float)
+				>> m_playerConfig.FR//Fill Color Red (int)
+				>> m_playerConfig.FG//Fill Color Green (int)
+				>> m_playerConfig.FB//Fill Color Blue (int)
+				>> m_playerConfig.OR//Outline Color Red (int)
+				>> m_playerConfig.OG//Outline Color Green (int)
+				>> m_playerConfig.OB//Outline Color Blue (int)
+				>> m_playerConfig.OT//Outline Thickness (int)
+ 				>> m_playerConfig.V;//Vertices (int)
 
 
         }
         if (type == "Enemy")
         {
-            istr >> m_enemyConfig.SR
-                >> m_enemyConfig.CR
-                >> m_enemyConfig.SMIN
-                >> m_enemyConfig.SMAX
-                >> m_enemyConfig.OR
-                >> m_enemyConfig.OG
-                >> m_enemyConfig.OB
-                >> m_enemyConfig.OT
-                >> m_enemyConfig.VMIN
-                >> m_enemyConfig.VMAX
-                >> m_enemyConfig.L
-                >> m_enemyConfig.SI;
+			istr >> m_enemyConfig.SR//Shape Radius (int)
+				>> m_enemyConfig.CR//Collision Radius (int)
+				>> m_enemyConfig.SMIN//Minimum Speed (float)
+				>> m_enemyConfig.SMAX//Maximum Speed (float)
+				>> m_enemyConfig.OR//Outline Color Red (int)
+				>> m_enemyConfig.OG//Outline Color Green (int)
+				>> m_enemyConfig.OB//Outline Color Blue (int)
+				>> m_enemyConfig.OT//Outline Thickness (int)
+				>> m_enemyConfig.VMIN// Minimum Vertices (int)
+				>> m_enemyConfig.VMAX// Maximum Vertices (int)
+				>> m_enemyConfig.L//Lifespan (int) of small enemies
+				>> m_enemyConfig.SI;//Spawn Interval (int)
                 
 
 
         }
         if (type == "Bullet")
         {
-            istr >> m_bulletConfig.SR
-                >> m_bulletConfig.CR
-                >> m_bulletConfig.S
-                >> m_bulletConfig.FR
-                >> m_bulletConfig.FG
-                >> m_bulletConfig.FB
-                >> m_bulletConfig.OR
-                >> m_bulletConfig.OG
-                >> m_bulletConfig.OB
-                >> m_bulletConfig.OT
-                >> m_bulletConfig.V
-                >> m_bulletConfig.L;
+			istr >> m_bulletConfig.SR//Shape Radius (int)
+				>> m_bulletConfig.CR//Collision Radius (int)
+				>> m_bulletConfig.S//Speed (float)
+				>> m_bulletConfig.FR//Fill Color Red (int)
+				>> m_bulletConfig.FG//Fill Color Green (int)
+				>> m_bulletConfig.FB//Fill Color Blue (int)
+				>> m_bulletConfig.OR//Outline Color Red (int)
+				>> m_bulletConfig.OG//Outline Color Green (int)
+				>> m_bulletConfig.OB//Outline Color Blue (int)
+				>> m_bulletConfig.OT//Outline Thickness (int)
+				>> m_bulletConfig.V//Vertices (int)
+				>> m_bulletConfig.L;//Lifespan (int)
 
 
         }
@@ -172,6 +173,7 @@ void Game::spawnPlayer()
 
   // Add an input component to the player so that we can use inputs
   e->add<CInput>();
+  
 }
 
 
@@ -180,6 +182,18 @@ void Game::spawnEnemy()
 {
   // TODO: make sure the enemy is spawned properly with the m_enemyConfig variables
   //      the enemy must be spawned completely within the bounds of the window
+	auto e = m_entities.addEntity("enemy");
+
+	// add components to the enemy here
+	e->add<CTransform>(Vec2(m_windowConfig.winWidth / 4, m_windowConfig.winHeight / 4), Vec2f(0.f, 0.f), 0.0f);
+
+	e->add<CShape>(m_enemyConfig.SR, m_enemyConfig.VMIN, sf::Color(100, 100, 100), sf::Color(m_enemyConfig.OR, m_enemyConfig.OG, m_enemyConfig.OB), m_enemyConfig.OT);
+
+	// set a random position within the window bounds
+	e->get<CTransform>().pos = Vec2f(abs(rand() % (int)(m_windowConfig.winWidth - 2 * m_enemyConfig.SR)) + m_enemyConfig.SR, rand() % (int)(m_windowConfig.winHeight - 2 * m_enemyConfig.SR) + m_enemyConfig.SR);
+
+    // add collision component
+    e->add<CCollision>(m_enemyConfig.CR);
 
   // record when the most recent enemy was spawned
   m_lastEnemeySpawnTime = m_currentFrame;
@@ -200,9 +214,22 @@ void Game::spawnSmallEnemies(std::shared_ptr<Entity> e)
 // spawns a bullet from a give entity to a target location
 void Game::spawnBullet(std::shared_ptr<Entity> entity, const Vec2f & target)
 {
-  // TO-DO: implement the spawning of a bullet which travels towards target
+  // TO-DO: 
+  // implement the spawning of a bullet which travels towards target
   //       - bullet speed is given as a scalar speed
   //       - you must set the velocity by using formula in notes 
+	auto e = m_entities.addEntity("bullet");
+	// add components to the bullet here
+	e->add<CTransform>(entity->get<CTransform>().pos, Vec2f(0.f, 0.f), 0.0f);
+	e->add<CShape>(m_bulletConfig.SR, m_bulletConfig.V, sf::Color(m_bulletConfig.FR, m_bulletConfig.FG, m_bulletConfig.FB), sf::Color(m_bulletConfig.OR, m_bulletConfig.OG, m_bulletConfig.OB), m_bulletConfig.OT);
+	// set velocity towards target
+	Vec2f direction = target - entity->get<CTransform>().pos;
+	direction.normalize();
+	e->get<CTransform>().velocity = direction * m_bulletConfig.S;
+	// add lifespan component
+	e->add<CLifespan>(m_bulletConfig.L);
+    
+
 }
 
 void Game::spawnSpecialWeapon(std::shared_ptr<Entity> entity)
@@ -215,6 +242,7 @@ void Game::sMovement()
   // TO-DO: implement all entity movement in this function
   //        you should read the m_player->cInput component to determine if the player is moving up or down or left or right
   
+    //PLAYER - DONE
     auto& input = player()->get<CInput>();
     auto& transform = player()->get<CTransform>();
 	
@@ -252,6 +280,17 @@ void Game::sMovement()
   
  // transform.pos.x += transform.velocity.x;
   //transform.pos.y += transform.velocity.y;
+
+
+	//BULLETS - DONE
+	for (auto bullet : m_entities.getEntities("bullet"))
+	{
+		auto& bTransform = bullet->get<CTransform>();
+		bTransform.pos += bTransform.velocity;
+		
+	}
+
+
 }
   
 void Game::sLifespan()
@@ -265,6 +304,29 @@ void Game::sLifespan()
   //        scale its alpha channel properly
   //     if it has lifespan and its time is up
   //        destroy the entity
+	for (auto e : m_entities.getEntities())
+	{
+		if (!e->has<CLifespan>())
+		{
+			continue;
+		}
+		auto& lifespan = e->get<CLifespan>();
+		if (lifespan.remainingLifespan > 0)
+		{
+			lifespan.remainingLifespan--;
+		}
+		if (lifespan.remainingLifespan > 0)
+		{
+			float alpha = static_cast<float>(lifespan.remainingLifespan) / static_cast<float>(lifespan.lifespan) * 255.0f;
+			sf::Color color = e->get<CShape>().circle.getFillColor();
+			//color.a = static_cast<sf::uint8_t>(alpha);
+			e->get<CShape>().circle.setFillColor(color);
+		}
+		else
+		{
+			e->destroy();
+		}
+	}
 
 }
 
@@ -277,11 +339,33 @@ void Game::sCollision()
     for(auto e: m_entities.getEntities("enemy"))
     {
       // do collision logic
+		//check distance between bullet and enemy
+		Vec2f diff = b->get<CTransform>().pos - e->get<CTransform>().pos;
+		float distance = diff.length();
+		float collisionDistance = b->get<CCollision>().radius + e->get<CCollision>().radius;
+        if (distance < collisionDistance)
+        {
+            //collision detected
+            b->destroy();
+            e->destroy();
+            //spawn small enemies
+            spawnSmallEnemies(e);
+        }
     }
 
     for(auto e: m_entities.getEntities("smallEnemy"))
     {
       // do collision logic 
+		//check distance between bullet and small enemy
+		Vec2f diff = b->get<CTransform>().pos - e->get<CTransform>().pos;
+		float distance = diff.length();
+		float collisionDistance = b->get<CCollision>().radius + e->get<CCollision>().radius;
+        if (distance < collisionDistance)
+        {
+            //collision detected
+            b->destroy();
+            e->destroy();
+        }
     }
   }
 }
@@ -297,9 +381,14 @@ void Game::sGUI()
 
 void Game::sEnemySpawner()
 {
-  // TO-DO: implement enemy spawning logic here
+  // TO-DO: DONE
+  // implement enemy spawning logic here
   //        use m_enemyConfig to set enemy properties
   //        use m_lastEnemySpawnTime and m_currentFrame to determine when to spawn next enemy
+    if (m_currentFrame - m_lastEnemeySpawnTime >= m_enemyConfig.SI)
+    {
+        spawnEnemy();
+    }
 }
 
 void Game::sRender()
@@ -311,6 +400,7 @@ void Game::sRender()
   //        sample drawing of the player Entity that we have created
   m_window.clear();
 
+  //PLAYER
   // set the position of the shape based on the entity's transform 
   player()->get<CShape>().circle.setPosition(player()->get<CTransform>().pos);
 
@@ -320,6 +410,31 @@ void Game::sRender()
 
   // draw the entity's sf::CircleShape
   m_window.draw(player()->get<CShape>().circle);
+
+  //ENEMIES DONE
+  for (auto enemy : m_entities.getEntities("enemy"))
+  {
+	  // set the position of the shape based on the entity's transform 
+	  enemy->get<CShape>().circle.setPosition(enemy->get<CTransform>().pos);
+	  // set the rotation of the shape based on the entity's transform->angle
+	  enemy->get<CTransform>().angle += 1.0f;
+	  enemy->get<CShape>().circle.setRotation(sf::degrees(enemy->get<CTransform>().angle));
+	  // draw the entity's sf::CircleShape
+	  m_window.draw(enemy->get<CShape>().circle);
+  }
+
+
+  // BULLETS DONE
+  for (auto bullet : m_entities.getEntities("bullet"))
+  {
+	  // set the position of the shape based on the entity's transform 
+	  bullet->get<CShape>().circle.setPosition(bullet->get<CTransform>().pos);
+	  // set the rotation of the shape based on the entity's transform->angle
+	  bullet->get<CTransform>().angle += 1.0f;
+	  bullet->get<CShape>().circle.setRotation(sf::degrees(bullet->get<CTransform>().angle));
+	  // draw the entity's sf::CircleShape
+	  m_window.draw(bullet->get<CShape>().circle);
+  }
 
   // draw the ui last
   ImGui::SFML::Render(m_window);
@@ -378,6 +493,8 @@ void Game::sUserInput()
           input.right = true;
       }
 
+	 
+
     }
 
     // this event is triggered when a key is released
@@ -430,6 +547,9 @@ void Game::sUserInput()
         // TO-DO: spawn special weapon
         std::cout << "Right Mouse Button Pressed\n";
         std::cout << "Mouse Position: (" << mpos.x << ", " << mpos.y << ")\n";
+
+		spawnBullet(player(), mpos);
+
       }
     }
   }

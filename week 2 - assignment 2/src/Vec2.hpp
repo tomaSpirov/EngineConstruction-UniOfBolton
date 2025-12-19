@@ -1,5 +1,5 @@
 #pragma once
-
+#include <iostream>
 #include <SFML/Graphics.hpp>
 #include <math.h>
 
@@ -37,28 +37,28 @@ class Vec2
 
     Vec2 operator + (const Vec2& rhs) const 
     {
-      // TODO - implement add(+)
+      // TODO - implement add(+) - DONE
        
 
-      return Vec2(rhs.x + x, rhs.y + y);
+      return Vec2(x + rhs.x,y + rhs.y);
     }
 
     Vec2 operator - (const Vec2& rhs) const 
     {
-      // TODO
-      return Vec2(rhs.x - x, rhs.y - y);
+      // TODO - DONE
+      return Vec2(x - rhs.x, y - rhs.y);
     }
 
     Vec2 operator / (const T val) const 
     {
-      // TODO - NEED CHECK later
-      return Vec2(val.x/x, val.y / y);
+      // TODO - DONE
+      return Vec2(x/val, y/val);
     }
 
     Vec2 operator * (const T val) const 
     {
-      // TODO - NEED CHECK later
-      return Vec2(val.x / x, val.y / y);
+      // TODO - DONE
+      return Vec2(x * val, y*val);
     }
 
     bool operator == (const Vec2& rhs) const 
@@ -72,7 +72,7 @@ class Vec2
 
     bool operator != (const Vec2& rhs) const 
     {
-      // TODO
+		// TODO - DONE
        if (x != rhs.x && y != rhs.y) return true;
 
       return false;
@@ -80,7 +80,7 @@ class Vec2
 
     void operator += (const Vec2& rhs)
     {
-      // TODO - not sure
+      // TODO - DONE
         x += rhs.x;
         y += rhs.y;
     }
@@ -95,40 +95,41 @@ class Vec2
     void operator *= (const T val)
     {
       // TODO - DONE
-        x *= val.x;
-        y *= val.y;
+        x *= val;
+        y *= val;
     }
 
     void operator /= (const T val)
     {
       // TODO - DONE
-        x /= val.x;
-        y /= val.y;
+        x /= val;
+        y /= val;
     }
 
     float distance(const Vec2& rhs) const 
     {
-      // TODO - not sure
+      // TODO - DONE
 
          return sqrtf(pow(rhs.x - x) + pow(rhs.y - y));     
     }
 
     float length() const 
     {
-      // TODO - not sure
+      // TODO - DONE
 
-      return sqrtf(x * x + y * y);
+      return static_cast<T>(sqrtf(x * x + y * y));
     }
 
     void normalize()
     {
-      // TODO - not sure
+      // TODO - DONE
 
         float L = length();
-        x = x / L;
-        y = y / L;
+        x /= L;
+        y /= L;
 
     }
+
 };
 
 using Vec2f = Vec2<float>;

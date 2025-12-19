@@ -17,7 +17,7 @@ class EntityManager
 
 	void removeDeadEntities(EntityVec& vec)
 	{
-		// TODO
+		// TODO - DONE
 		// remove all entities from vec that are not alive
 
 		for (int i = 0; i < vec.size(); )

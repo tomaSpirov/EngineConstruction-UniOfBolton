@@ -217,33 +217,34 @@ void Game::sMovement()
   
     auto& input = player()->get<CInput>();
     auto& transform = player()->get<CTransform>();
-  
+	
+	Vec2f direction(0.f, 0.f);
 
-    if (input.up && input.left)
-    {
-        std::cout << "X:" << transform.pos.x + m_playerConfig.S << std::endl;
 
-        Vec2f(transform.pos.x + m_playerConfig.S, transform.pos.y + m_playerConfig.S).normalize();
-    }
-
-    if (input.up) 
+	if (input.up)
+	{
+		direction.y -= 1.f;
+	}
+    if (input.down) 
     {
-        transform.pos.y -= transform.velocity.y + m_playerConfig.S;
+		direction.y += 1.f;
     }
-    if (input.left)
-    {
-        transform.pos.x -= transform.velocity.x + m_playerConfig.S;
-        std::cout << "X:" << transform.pos.x + m_playerConfig.S << std::endl;
-
-    }
-    if (input.down)
-    {
-        transform.pos.y += transform.velocity.y + m_playerConfig.S;
-    }
+	if (input.left)
+	{
+		direction.x -= 1.f;
+	}
     if (input.right)
     {
-        transform.pos.x += transform.velocity.x + m_playerConfig.S;
+        direction.x += 1.f;
     }
+
+    if (direction.x != 0.f || direction.y != 0.f) 
+    {
+        direction.normalize();
+    }
+
+	transform.velocity = direction * m_playerConfig.S;
+	transform.pos += transform.velocity;
 
    
 

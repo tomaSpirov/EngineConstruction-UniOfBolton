@@ -7,6 +7,8 @@
 #include "imgui-SFML.h"
 #include "imgui_stdlib.h"
 
+#include <string>
+
 struct PlayerConfig 
 { 
   int SR, CR, FR, FG, FB, OR, OG, OB, OT, V;
@@ -40,7 +42,6 @@ struct FontConfig
 		int colorR, colorG, colorB;
 };
 
-#include <string>
 
 
 

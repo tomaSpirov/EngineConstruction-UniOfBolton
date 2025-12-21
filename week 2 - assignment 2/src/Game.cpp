@@ -10,7 +10,7 @@ Game::Game(const std::string &configFile)
 {
 
   init(configFile);
-  init(configFile);
+  
 }
 
 void Game::init(const std::string &path)
@@ -183,6 +183,15 @@ void Game::spawnEnemy()
   // TODO: make sure the enemy is spawned properly with the m_enemyConfig variables
   //      the enemy must be spawned completely within the bounds of the window
 	auto e = m_entities.addEntity("enemy");
+	float speed = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (m_enemyConfig.SMAX - m_enemyConfig.SMIN))) + m_enemyConfig.SMIN;
+	// set a random velocity direction
+	float angle = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / 360.0f));
+	Vec2f velocity(cosf(std::cos(angle)), std::sin(angle));
+	velocity.normalize();
+
+	// set the velocity
+
+	
 
 	// add components to the enemy here
 	e->add<CTransform>(Vec2(m_windowConfig.winWidth / 4, m_windowConfig.winHeight / 4), Vec2f(0.f, 0.f), 0.0f);
@@ -191,6 +200,8 @@ void Game::spawnEnemy()
 
 	// set a random position within the window bounds
 	e->get<CTransform>().pos = Vec2f(abs(rand() % (int)(m_windowConfig.winWidth - 2 * m_enemyConfig.SR)) + m_enemyConfig.SR, rand() % (int)(m_windowConfig.winHeight - 2 * m_enemyConfig.SR) + m_enemyConfig.SR);
+    //set speed velocity
+	e->get<CTransform>().velocity = velocity * speed;
 
     // add collision component
     e->add<CCollision>(m_enemyConfig.CR);
@@ -208,13 +219,31 @@ void Game::spawnSmallEnemies(std::shared_ptr<Entity> e)
   // - spawn a number of small enemies equal to the vertices of the original enemy
   // - set each small enemy to the same color as the original, half the size
   // - small enemies are worth double points of the original enemy
+
+	int numSmallEnemies = e->get<CShape>().circle.getPointCount();
+    
+	//place small enemies with a start position of the original enemy
+    for (int i = 0; i < numSmallEnemies; i++) 
+    {
+        auto curr_e = m_entities.addEntity("smallEnemy");
+        curr_e->add<CTransform>(Vec2(e->get<CTransform>().pos.x, e->get<CTransform>().pos.y), Vec2f(0.f, 0.f), 0.0f);
+        curr_e->add<CShape>(m_enemyConfig.SR, m_enemyConfig.VMIN, sf::Color(255, 255, 255), sf::Color(m_enemyConfig.OR, m_enemyConfig.OG, m_enemyConfig.OB), m_enemyConfig.OT);
+
+		std::cout << "Spawning small enemy FROM: " << i + 1 << " at position (" << e->get<CTransform>().pos.x << ", " << e->get<CTransform>().pos.y << ")\n";
+		std::cout << "Spawning small enemy TO: " << i + 1 << " at position (" << curr_e->get<CTransform>().pos.x << ", " << curr_e->get<CTransform>().pos.y << ")\n";
+        // record when the most recent enemy was spawned
+       
+    }
+    // record when the most recent enemy was spawned
+   
+
 }
 
 
 // spawns a bullet from a give entity to a target location
 void Game::spawnBullet(std::shared_ptr<Entity> entity, const Vec2f & target)
 {
-  // TO-DO: 
+  // TO-DO: DONE
   // implement the spawning of a bullet which travels towards target
   //       - bullet speed is given as a scalar speed
   //       - you must set the velocity by using formula in notes 
@@ -291,6 +320,47 @@ void Game::sMovement()
 	}
 
 
+
+    //ENEMY -NOTT
+    for (auto enemy : m_entities.getEntities("enemy")) 
+    {
+		auto& eShape = enemy->get<CShape>();
+		float eRadius = eShape.circle.getRadius();
+
+        auto& eTransform = enemy->get<CTransform>();
+        eTransform.pos += eTransform.velocity;
+
+
+		//check window bounds 
+		float left = eRadius;
+		float right = m_windowConfig.winWidth - eRadius;
+		float top = eRadius;
+		float bottom = m_windowConfig.winHeight - eRadius;
+        
+        if (eTransform.pos.x < left)
+        {
+            eTransform.pos.x = left;
+            eTransform.velocity.x *= -1.f;
+        }
+		else if (eTransform.pos.x > right)
+		{
+			eTransform.pos.x = right;
+			eTransform.velocity.x *= -1.f;
+		}
+
+		if (eTransform.pos.y < top)
+		{
+			eTransform.pos.y = top;
+			eTransform.velocity.y *= -1.f;
+		}
+        else if (eTransform.pos.y > bottom) {
+			eTransform.pos.y = bottom;
+			eTransform.velocity.y *= -1.f;
+        }
+
+    }
+
+
 }
   
 void Game::sLifespan()
@@ -332,7 +402,8 @@ void Game::sLifespan()
 
 void Game::sCollision()
 {
-  // TO-DO: implement all proper collisions between entities
+  // TO-DO: DONE 
+  // implement all proper collisions between entities
   //        be sure to use the collision radius, NOT the shape radius
   for(auto b: m_entities.getEntities("bullet"))
   {
@@ -363,8 +434,8 @@ void Game::sCollision()
         if (distance < collisionDistance)
         {
             //collision detected
-            b->destroy();
-            e->destroy();
+           // b->destroy();
+           // e->destroy();
         }
     }
   }
@@ -421,6 +492,18 @@ void Game::sRender()
 	  enemy->get<CShape>().circle.setRotation(sf::degrees(enemy->get<CTransform>().angle));
 	  // draw the entity's sf::CircleShape
 	  m_window.draw(enemy->get<CShape>().circle);
+  }
+
+  //SMALL ENEMIES DONE
+  for (auto smallEnemy : m_entities.getEntities("smallEnemy"))
+  {
+	  // set the position of the shape based on the entity's transform 
+	  smallEnemy->get<CShape>().circle.setPosition(smallEnemy->get<CTransform>().pos);
+	  // set the rotation of the shape based on the entity's transform->angle
+	  smallEnemy->get<CTransform>().angle += 1.0f;
+	  smallEnemy->get<CShape>().circle.setRotation(sf::degrees(smallEnemy->get<CTransform>().angle));
+	  // draw the entity's sf::CircleShape
+	  m_window.draw(smallEnemy->get<CShape>().circle);
   }
 
 

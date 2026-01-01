@@ -227,7 +227,7 @@ void Game::spawnSmallEnemies(std::shared_ptr<Entity> e)
     {
         auto curr_e = m_entities.addEntity("smallEnemy");
         curr_e->add<CTransform>(Vec2(e->get<CTransform>().pos.x, e->get<CTransform>().pos.y), Vec2f(0.f, 0.f), 0.0f);
-        curr_e->add<CShape>(m_enemyConfig.SR, m_enemyConfig.VMIN, sf::Color(255, 255, 255), sf::Color(m_enemyConfig.OR, m_enemyConfig.OG, m_enemyConfig.OB), m_enemyConfig.OT);
+        curr_e->add<CShape>(e->get<CShape>().circle.getRadius()/2, m_enemyConfig.VMIN, sf::Color(255, 255, 255), sf::Color(m_enemyConfig.OR, m_enemyConfig.OG, m_enemyConfig.OB), m_enemyConfig.OT);
 
 		std::cout << "Spawning small enemy FROM: " << i + 1 << " at position (" << e->get<CTransform>().pos.x << ", " << e->get<CTransform>().pos.y << ")\n";
 		std::cout << "Spawning small enemy TO: " << i + 1 << " at position (" << curr_e->get<CTransform>().pos.x << ", " << curr_e->get<CTransform>().pos.y << ")\n";
@@ -321,7 +321,7 @@ void Game::sMovement()
 
 
 
-    //ENEMY -NOTT
+    //ENEMY - DONE
     for (auto enemy : m_entities.getEntities("enemy")) 
     {
 		auto& eShape = enemy->get<CShape>();
@@ -360,6 +360,14 @@ void Game::sMovement()
 
     }
 
+	//SMALL ENEMY
+    for (auto smallEnemy : m_entities.getEntities("smallEnemy"))
+    {
+        auto& seShape = smallEnemy->get<CShape>();
+        float seRadius = seShape.circle.getRadius()/2;
+        auto& seTransform = smallEnemy->get<CTransform>();
+        seTransform.pos += seTransform.velocity;
+    }
 
 }
   
